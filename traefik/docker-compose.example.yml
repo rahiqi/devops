@@ -1,0 +1,75 @@
+services:
+  traefik:
+    image: "traefik"
+    restart: always
+    networks:
+      - finitx-gateway_default
+      - solar-shop_default
+      - n8n_default
+      - caraway-network
+      - default
+    command:
+      - "--log.level=TRACE"
+      - "--api.insecure=true"
+
+      # Providers
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--providers.file.directory=/etc/traefik/dynamic"
+      - "--providers.file.watch=true"
+    
+      # EntryPoints
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
+      - "--entrypoints.websecure.address=:443"
+    
+      # EXISTING TLS-ALPN-01 (UNCHANGED)
+      - "--certificatesresolvers.mytlschallenge.acme.tlschallenge=true"
+      - "--certificatesresolvers.mytlschallenge.acme.email=${SSL_EMAIL}"
+      - "--certificatesresolvers.mytlschallenge.acme.storage=/letsencrypt/acme.json"
+    
+      # ✅ NEW DNS-01 RESOLVER (Cloudflare)
+      - "--certificatesresolvers.mydnschallenge.acme.dnschallenge.provider=cloudflare"
+      - "--certificatesresolvers.mydnschallenge.acme.dnschallenge.delaybeforecheck=0"
+      - "--certificatesresolvers.mydnschallenge.acme.email=${SSL_EMAIL}"
+      - "--certificatesresolvers.mydnschallenge.acme.storage=/letsencrypt/acme.json"
+    
+      # Default TLS resolver (keep existing behavior)
+      - "--entrypoints.websecure.http.tls.certresolver=mytlschallenge"
+    
+      # Existing domain declarations (safe to keep)
+      - "--entrypoints.websecure.http.tls.domains[0].main=${DOMAIN_1}"
+      - "--entrypoints.websecure.http.tls.domains[0].sans=*.${DOMAIN_1}"
+      - "--entrypoints.websecure.http.tls.domains[1].main=${DOMAIN_2}"
+      - "--entrypoints.websecure.http.tls.domains[1].sans=*.${DOMAIN_2}"
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"
+
+    environment:
+      CF_API_TOKEN: ${CLOUDFLARE_API_TOKEN} 
+      CLOUDFLARE_DNS_API_TOKEN: ${CLOUDFLARE_DNS_API_TOKEN}
+    volumes:
+      - traefik_data:/letsencrypt
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - traefik-dynamic:/etc/traefik/dynamic
+      #- ./traefik.toml:/traefik.toml
+
+networks:
+  finitx-gateway_default:
+    external: true
+  n8n_default:
+    external: true
+  solar-shop_default:  
+    external: true
+  caraway-network:
+    external: true
+  default:
+    
+volumes:
+  traefik_data:
+  traefik-dynamic:
+  traefik-toml:
+    

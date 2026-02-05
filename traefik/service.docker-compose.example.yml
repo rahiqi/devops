@@ -1,0 +1,41 @@
+services:
+  portainer:
+    container_name: portainer
+    image: portainer/portainer-ee:lts
+    restart: always
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer_data:/data
+    ports:
+      - 9443:9443
+      - 8000:8000  # Remove if you do not intend to use Edge Agents
+    networks:
+      default:
+      traefik:
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.portainer.rule=Host(`port.finitx.com`)
+      - traefik.http.routers.portainer.tls=true
+      - traefik.docker.network=traefik
+      - traefik.http.routers.portainer.entrypoints=web,websecure
+      - traefik.http.routers.portainer.tls.certresolver=mytlschallenge
+      - traefik.http.middlewares.portainer.headers.SSLRedirect=true
+      - traefik.http.middlewares.portainer.headers.STSSeconds=315360000
+      - traefik.http.middlewares.portainer.headers.browserXSSFilter=true
+      - traefik.http.middlewares.portainer.headers.contentTypeNosniff=true
+      - traefik.http.middlewares.portainer.headers.forceSTSHeader=true
+      - traefik.http.middlewares.portainer.headers.SSLHost=finitx.com
+      - traefik.http.middlewares.portainer.headers.STSIncludeSubdomains=true
+      - traefik.http.middlewares.portainer.headers.STSPreload=true
+      - traefik.http.routers.portainer.middlewares=portainer@docker
+      - traefik.http.services.portainer.loadbalancer.server.port=9443
+      - "traefik.http.routers.portainer.observability.tracing=true"
+volumes:
+  portainer_data:
+    name: portainer_data
+
+networks:
+  default:
+    name: portainer_network
+  traefik:
+    external: true
