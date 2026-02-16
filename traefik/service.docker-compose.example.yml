@@ -28,7 +28,7 @@ services:
       - traefik.http.middlewares.portainer.headers.STSIncludeSubdomains=true
       - traefik.http.middlewares.portainer.headers.STSPreload=true
       - traefik.http.routers.portainer.middlewares=portainer@docker
-      - traefik.http.services.portainer.loadbalancer.server.port=9443
+      - traefik.http.services.portainer.loadbalancer.server.port=9000
       - "traefik.http.routers.portainer.observability.tracing=true"
 volumes:
   portainer_data:
