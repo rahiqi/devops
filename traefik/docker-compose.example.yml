@@ -3,10 +3,10 @@ services:
     image: "traefik"
     restart: always
     networks:
-      - finitx-gateway_default
-      - solar-shop_default
-      - n8n_default
-      - caraway-network
+      # - finitx-gateway_default
+      # - solar-shop_default
+      # - n8n_default
+      # - caraway-network
       - default
     command:
       - "--log.level=TRACE"
@@ -58,18 +58,19 @@ services:
       #- ./traefik.toml:/traefik.toml
 
 networks:
-  finitx-gateway_default:
-    external: true
-  n8n_default:
-    external: true
-  solar-shop_default:  
-    external: true
-  caraway-network:
-    external: true
+  # finitx-gateway_default:
+  #   external: true
+  # n8n_default:
+  #   external: true
+  # solar-shop_default:  
+  #   external: true
+  # caraway-network:
+  #   external: true
   default:
-    
+    name: traefik
 volumes:
   traefik_data:
   traefik-dynamic:
   traefik-toml:
+    
     
